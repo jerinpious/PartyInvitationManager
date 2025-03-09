@@ -1,0 +1,11 @@
+﻿@model PartyInvitationManager.Models.Party
+
+<h2>Party Details</h2>
+
+<p><strong>Name:</strong> @Model.Name</p>
+<p><strong>Description:</strong> @Model.Description</p>
+<p><strong>Date:</strong> @Model.Date.ToShortDateString()</p>
+<p><strong>Location:</strong> @Model.Location</p>
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>
