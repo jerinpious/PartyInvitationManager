@@ -7,5 +7,26 @@
 <p><strong>Date:</strong> @Model.Date.ToShortDateString()</p>
 <p><strong>Location:</strong> @Model.Location</p>
 
-<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+<h3>Guest List</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Guest Name</th>
+            <th>Email</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var invitation in Model.Invitations)
+        {
+            <tr>
+                <td>@invitation.GuestName</td>
+                <td>@invitation.GuestEmail</td>
+                <td>@invitation.Status</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-controller="Invitation" asp-action="Create" class="btn btn-primary">Add Guest</a>
 <a asp-action="Index" class="btn btn-secondary">Back to List</a>

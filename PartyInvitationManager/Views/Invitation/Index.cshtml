@@ -1,0 +1,35 @@
+﻿@model IEnumerable<PartyInvitationManager.Models.Invitation>
+
+@{
+    ViewData["Title"] = "Invitation List";
+}
+
+<h2>Invitations</h2>
+<a asp-action="Create" class="btn btn-primary">Create New Invitation</a>
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Guest Name</th>
+            <th>Email</th>
+            <th>Party</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.GuestName</td>
+                <td>@item.GuestEmail</td>
+                <td>@item.Party.Name</td>
+                <td>@item.Status</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

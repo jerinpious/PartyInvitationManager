@@ -4,123 +4,131 @@ using PartyInvitationManager.Models;
 
 namespace PartyInvitationManager.Controllers
 {
-    public class PartyController : Controller
+    public class InvitationController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public PartyController(ApplicationDbContext context)
+        public InvitationController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Party
+        // GET: Invitation
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Parties.ToListAsync());
+            var invitations = await _context.Invitations.Include(i => i.Party).ToListAsync();
+            return View(invitations);
         }
 
-        // GET: Party/Details/5
+        // GET: Invitation/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
                 return NotFound();
 
-            var party = await _context.Parties
-                .Include(p => p.Invitations)
+            var invitation = await _context.Invitations
+                .Include(i => i.Party)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (party == null)
+            if (invitation == null)
                 return NotFound();
 
-            return View(party);
+            return View(invitation);
         }
 
-
-        // GET: Party/Create
+        // GET: Invitation/Create
         public IActionResult Create()
         {
+            ViewBag.Parties = _context.Parties.ToList();  // Populate dropdown
             return View();
         }
 
-        // POST: Party/Create
+        // POST: Invitation/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Date,Location")] Party party)
+        public async Task<IActionResult> Create([Bind("Id,GuestName,GuestEmail,PartyId,Status")] Invitation invitation)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(party);
+                _context.Add(invitation);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(party);
+            ViewBag.Parties = _context.Parties.ToList();  // Repopulate dropdown in case of error
+            return View(invitation);
         }
 
-        // GET: Party/Edit/5
+        // GET: Invitation/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
                 return NotFound();
 
-            var party = await _context.Parties.FindAsync(id);
-            if (party == null)
+            var invitation = await _context.Invitations.FindAsync(id);
+            if (invitation == null)
                 return NotFound();
 
-            return View(party);
+            ViewBag.Parties = _context.Parties.ToList();  // Populate dropdown
+            return View(invitation);
         }
 
-        // POST: Party/Edit/5
+        // POST: Invitation/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Date,Location")] Party party)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,GuestName,GuestEmail,PartyId,Status")] Invitation invitation)
         {
-            if (id != party.Id)
+            if (id != invitation.Id)
                 return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(party);
+                    _context.Update(invitation);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_context.Parties.Any(e => e.Id == id))
+                    if (!_context.Invitations.Any(e => e.Id == id))
                         return NotFound();
                     else
                         throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(party);
+            ViewBag.Parties = _context.Parties.ToList();
+            return View(invitation);
         }
 
-        // GET: Party/Delete/5
+        // GET: Invitation/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
                 return NotFound();
 
-            var party = await _context.Parties.FirstOrDefaultAsync(m => m.Id == id);
-            if (party == null)
+            var invitation = await _context.Invitations
+                .Include(i => i.Party)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (invitation == null)
                 return NotFound();
 
-            return View(party);
+            return View(invitation);
         }
 
-        // POST: Party/Delete/5
+        // POST: Invitation/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var party = await _context.Parties.FindAsync(id);
-            if (party != null)
+            var invitation = await _context.Invitations.FindAsync(id);
+            if (invitation != null)
             {
-                _context.Parties.Remove(party);
+                _context.Invitations.Remove(invitation);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
         }
     }
 }
+    
