@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using PartyInvitationManager.Models;
+using PartyInvitationManager.Data;
 
 #nullable disable
 
@@ -24,11 +24,11 @@ namespace PartyInvitationManager.Migrations
 
             modelBuilder.Entity("PartyInvitationManager.Models.Invitation", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("InvitationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvitationId"));
 
                     b.Property<string>("GuestEmail")
                         .IsRequired()
@@ -36,16 +36,17 @@ namespace PartyInvitationManager.Migrations
 
                     b.Property<string>("GuestName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PartyId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
-                    b.HasKey("Id");
+                    b.HasKey("InvitationId");
 
                     b.HasIndex("PartyId");
 
@@ -54,29 +55,24 @@ namespace PartyInvitationManager.Migrations
 
             modelBuilder.Entity("PartyInvitationManager.Models.Party", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("PartyId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PartyId"));
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("EventDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
+                    b.HasKey("PartyId");
 
                     b.ToTable("Parties");
                 });

@@ -1,34 +1,27 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using PartyInvitationManager.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace PartyInvitationManager.Models
 {
-    public enum InvitationStatus
-    {
-        Pending,
-        Accepted,
-        Declined
-    }
-
     public class Invitation
     {
-        [Key]
-        public int Id { get; set; }
+        public int InvitationId { get; set; }
 
-        [Required]
-        [StringLength(100)]
-        public string GuestName { get; set; }
+        [Required(ErrorMessage = "Guest name is required")]
+        [Display(Name = "Guest Name")]
+        public string GuestName { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
-        public string GuestEmail { get; set; }
+        [Required(ErrorMessage = "Guest email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        [Display(Name = "Guest Email")]
+        public string GuestEmail { get; set; } = string.Empty;
 
-        [Required]
-        public InvitationStatus Status { get; set; } = InvitationStatus.Pending;
+        public InvitationStatus Status { get; set; } = InvitationStatus.InvitationNotSent;
 
-        // Foreign Key - linking invitation to a party
-        [ForeignKey("Party")]
+        // Foreign key
         public int PartyId { get; set; }
+
+
         public Party? Party { get; set; }
     }
 }

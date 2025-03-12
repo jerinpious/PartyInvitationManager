@@ -1,0 +1,72 @@
+﻿@model PartyInvitationManager.ViewModels.InvitationResponseViewModel
+
+@{
+    ViewData["Title"] = "Party Invitation Response";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Party Invitation</h2>
+                </div>
+                <div class="card-body">
+                    <h3>Hello @Model.GuestName,</h3>
+
+                    <div class="mb-4">
+                        <h4>@Model.PartyDescription</h4>
+                        <p><strong>Date:</strong> @Model.PartyDate.ToString("dddd, MMMM d, yyyy at h:mm tt")</p>
+                        <p><strong>Location:</strong> @Model.PartyLocation</p>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <form asp-action="Respond" method="post">
+                        <input type="hidden" asp-for="InvitationId" />
+                        <div class="mb-4">
+                            <label asp-for="WillAttend" class="form-label fw-bold">Will you attend?</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="WillAttend" id="willAttendYes" value="true" @(Model.WillAttend == true ? "checked" : "") />
+                                <label class="form-check-label" for="willAttendYes">
+                                    Yes, I'll be there!
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="WillAttend" id="willAttendNo" value="false" @(Model.WillAttend == false ? "checked" : "") />
+                                <label class="form-check-label" for="willAttendNo">
+                                    No, I can't make it.
+                                </label>
+                            </div>
+                            <span asp-validation-for="WillAttend" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">Submit Response</button>
+                        </div>
+                    </form>
+                </div>
+                @if (ViewBag.FirstVisit == true)
+                {
+                    <div class="card-footer bg-light">
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle-fill me-2"></i> Welcome to our Party Invitation Manager!
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-footer bg-light text-muted">
+                        <small>You first visited this site on: @ViewBag.FirstVisitDate</small>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

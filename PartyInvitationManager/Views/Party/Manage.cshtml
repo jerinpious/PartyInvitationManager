@@ -1,0 +1,89 @@
+﻿@model PartyInvitationManager.ViewModels.ManagePartyViewModel
+@{
+    ViewData["Title"] = "Manage Party";
+}
+
+<h1>Manage your party</h1>
+
+<div>
+    <a asp-action="Index">All parties</a> |
+    <a asp-action="Edit" asp-route-id="@Model.PartyId">Edit this party</a> |
+    <a asp-action="Create">Add new party</a>
+</div>
+
+<div class="party-summary">
+    <p>The party "@Model.Description" is at @Model.Location on @Model.EventDate.ToString("MM/dd/yyyy")</p>
+
+    <p>Invites not sent: @Model.NotSentCount | Sent count: @Model.SentCount | Yes count: @Model.YesCount | No count: @Model.NoCount</p>
+
+    @if (Model.NotSentCount > 0)
+    {
+        <form asp-action="SendInvitations" asp-route-id="@Model.PartyId" method="post">
+            <button type="submit" class="btn btn-primary">Send Invitations</button>
+        </form>
+    }
+</div>
+
+<h3>Invitations:</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Guest name</th>
+            <th>Guest email</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var invitation in Model.Invitations)
+        {
+            <tr>
+                <td>@invitation.GuestName</td>
+                <td>@invitation.GuestEmail</td>
+                <td>
+                    @switch (invitation.Status)
+                    {
+                        case PartyInvitationManager.Models.InvitationStatus.InvitationNotSent:
+                            <span>Not Sent</span>
+                            break;
+                        case PartyInvitationManager.Models.InvitationStatus.InvitationSent:
+                            <span>Sent</span>
+                            break;
+                        case PartyInvitationManager.Models.InvitationStatus.RespondedYes:
+                            <span>Accepted</span>
+                            break;
+                        case PartyInvitationManager.Models.InvitationStatus.RespondedNo:
+                            <span>Declined</span>
+                            break;
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h3>Add Guest:</h3>
+
+<form asp-action="AddInvitation" asp-route-id="@Model.PartyId" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
+        <label for="NewGuestName">Guest name</label>
+        <input asp-for="NewGuestName" class="form-control" />
+        <span asp-validation-for="NewGuestName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="NewGuestEmail">Guest email</label>
+        <input asp-for="NewGuestEmail" class="form-control" type="email" />
+        <span asp-validation-for="NewGuestEmail" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create invitation</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

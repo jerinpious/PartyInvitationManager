@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PartyInvitationManager.Migrations
 {
     /// <inheritdoc />
-    public partial class AddPartyAndInvitation : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,37 +15,36 @@ namespace PartyInvitationManager.Migrations
                 name: "Parties",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    PartyId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EventDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Parties", x => x.Id);
+                    table.PrimaryKey("PK_Parties", x => x.PartyId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Invitations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    InvitationId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    GuestName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    GuestName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     GuestEmail = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     PartyId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Invitations", x => x.Id);
+                    table.PrimaryKey("PK_Invitations", x => x.InvitationId);
                     table.ForeignKey(
                         name: "FK_Invitations_Parties_PartyId",
                         column: x => x.PartyId,
                         principalTable: "Parties",
-                        principalColumn: "Id",
+                        principalColumn: "PartyId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -55,7 +54,7 @@ namespace PartyInvitationManager.Migrations
                 column: "PartyId");
         }
 
-        /// <inheritdoc />
+
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

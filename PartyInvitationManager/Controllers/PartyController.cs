@@ -1,126 +1,152 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PartyInvitationManager.Models;
+using PartyInvitationManager.Services.Interfaces;
+using PartyInvitationManager.ViewModels;
 
 namespace PartyInvitationManager.Controllers
 {
+    [Route("parties")]
     public class PartyController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IPartyManager _partyManager;
+        private readonly ILogger<PartyController> _logger;
 
-        public PartyController(ApplicationDbContext context)
+        public PartyController(IPartyManager partyManager, ILogger<PartyController> logger)
         {
-            _context = context;
+            _partyManager = partyManager;
+            _logger = logger;
         }
 
-        // GET: Party
+        [HttpGet("")]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Parties.ToListAsync());
+            CheckFirstVisitCookie();
+
+            var parties = await _partyManager.GetAllPartiesAsync();
+            return View(parties);
         }
 
-        // GET: Party/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-                return NotFound();
-
-            var party = await _context.Parties
-                .Include(p => p.Invitations)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (party == null)
-                return NotFound();
-
-            return View(party);
-        }
-
-
-        // GET: Party/Create
+        [HttpGet("create")]
         public IActionResult Create()
         {
-            return View();
+            CheckFirstVisitCookie();
+
+            return View(new CreatePartyViewModel());
         }
 
-        // POST: Party/Create
-        [HttpPost]
+        [HttpPost("create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Date,Location")] Party party)
+        public async Task<IActionResult> Create(CreatePartyViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(party);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return View(model);
             }
-            return View(party);
-        }
 
-        // GET: Party/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-                return NotFound();
-
-            var party = await _context.Parties.FindAsync(id);
-            if (party == null)
-                return NotFound();
-
-            return View(party);
-        }
-
-        // POST: Party/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Date,Location")] Party party)
-        {
-            if (id != party.Id)
-                return NotFound();
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(party);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.Parties.Any(e => e.Id == id))
-                        return NotFound();
-                    else
-                        throw;
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(party);
-        }
-
-        // GET: Party/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-                return NotFound();
-
-            var party = await _context.Parties.FirstOrDefaultAsync(m => m.Id == id);
-            if (party == null)
-                return NotFound();
-
-            return View(party);
-        }
-
-        // POST: Party/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var party = await _context.Parties.FindAsync(id);
-            if (party != null)
-            {
-                _context.Parties.Remove(party);
-                await _context.SaveChangesAsync();
-            }
+            await _partyManager.CreatePartyAsync(model);
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> Manage(int id)
+        {
+            CheckFirstVisitCookie();
+
+            var model = await _partyManager.GetManagePartyViewModelAsync(id);
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            return View(model);
+        }
+
+        [HttpPost("{id:int}/invitations")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddInvitation(int id, ManagePartyViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var fullModel = await _partyManager.GetManagePartyViewModelAsync(id);
+                if (fullModel == null)
+                {
+                    return NotFound();
+                }
+
+                fullModel.NewGuestName = model.NewGuestName;
+                fullModel.NewGuestEmail = model.NewGuestEmail;
+                return View("Manage", fullModel);
+            }
+
+            await _partyManager.AddInvitationToPartyAsync(id, model.NewGuestName, model.NewGuestEmail);
+            return RedirectToAction(nameof(Manage), new { id });
+        }
+
+        [HttpPost("{id:int}/send-invitations-requests")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendInvitations(int id)
+        {
+            await _partyManager.SendInvitationsAsync(id);
+            return RedirectToAction(nameof(Manage), new { id });
+        }
+
+        [HttpGet("{id:int}/edit")]
+        public async Task<IActionResult> Edit(int id)
+        {
+
+            CheckFirstVisitCookie();
+
+            var party = await _partyManager.GetPartyByIdAsync(id);
+            if (party == null)
+            {
+                return NotFound();
+            }
+
+            var model = new EditPartyViewModel
+            {
+                PartyId = party.PartyId,
+                Description = party.Description,
+                EventDate = party.EventDate,
+                Location = party.Location
+            };
+
+            return View(model);
+        }
+
+        [HttpPost("{id:int}/edit")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, EditPartyViewModel model)
+        {
+            if (id != model.PartyId)
+            {
+                return BadRequest();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            await _partyManager.UpdatePartyAsync(model);
+            return RedirectToAction(nameof(Manage), new { id });
+        }
+
+        private void CheckFirstVisitCookie()
+        {
+            if (!Request.Cookies.ContainsKey("FirstVisitDate"))
+            {
+                var currentDate = DateTime.Now.ToString("g");
+                var cookieOptions = new CookieOptions
+                {
+                    Expires = DateTime.Now.AddYears(1)
+                };
+                Response.Cookies.Append("FirstVisitDate", currentDate, cookieOptions);
+                ViewBag.FirstVisit = true;
+            }
+            else
+            {
+                ViewBag.FirstVisit = false;
+                ViewBag.FirstVisitDate = Request.Cookies["FirstVisitDate"];
+            }
         }
     }
 }

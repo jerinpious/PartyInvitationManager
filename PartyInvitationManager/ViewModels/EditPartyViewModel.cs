@@ -1,9 +1,8 @@
-﻿using PartyInvitationManager.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace PartyInvitationManager.Models
+namespace PartyInvitationManager.ViewModels
 {
-    public class Party
+    public class EditPartyViewModel
     {
         public int PartyId { get; set; }
 
@@ -16,7 +15,5 @@ namespace PartyInvitationManager.Models
         public DateTime EventDate { get; set; }
 
         public string Location { get; set; } = string.Empty;
-
-        public List<Invitation> Invitations { get; set; } = new List<Invitation>();
     }
 }
